@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Bakery - Game Matematika</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        body {
+            background-color: #fff5f7;
+            color: #8a4b76;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(255, 182, 193, 0.3);
+            border: 5px solid #ffb6c1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "🍰";
+            font-size: 200px;
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .game-screen {
+            display: none;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* Styling untuk layar awal */
+        #welcome-screen {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #ff69b4;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 #ffd1dc;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #b76e79;
+            margin-bottom: 30px;
+        }
+
+        .bakery-bg {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #ffb6c1, #ffccd5, #ffd7e0);
+            border-radius: 20px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 5px solid #ff8fa3;
+        }
+
+        .bakery-bg::before {
+            content: "🥐🍩🧁🍰";
+            font-size: 4rem;
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            animation: float 10s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #ff8fa3, #ff6b8b);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.4rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 0 #e75480;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 0 #e75480;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 0 #e75480;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .level-card {
+            background-color: #fff5f7;
+            border-radius: 15px;
+            padding: 15px;
+            width: 150px;
+            text-align: center;
+            border: 4px solid #ffb6c1;
+        }
+
+        .level-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .level-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #ff69b4;
+            margin-bottom: 5px;
+        }
+
+        /* Styling untuk layar permainan */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background-color: #fff0f5;
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid #ffb6c1;
+        }
+
+        .level-info-game {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff69b4;
+        }
+
+        .customer-count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff69b4;
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 4px solid #ffb6c1;
+        }
+
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .timer-label {
+            font-size: 1.2rem;
+            color: #b76e79;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff69b4;
+            background-color: #fff0f5;
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: 4px solid #ffb6c1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .timer.warning {
+            color: #ff4500;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .customer-container {
+            background-color: #fff0f5;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 4px solid #ffb6c1;
+            text-align: center;
+        }
+
+        .customer {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .customer-message {
+            font-size: 1.4rem;
+            color: #b76e79;
+            margin-bottom: 15px;
+        }
+
+        .question-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 4px solid #ffccd5;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 2.8rem;
+            margin-bottom: 30px;
+            color: #8a4b76;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-input {
+            width: 200px;
+            padding: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+            border: 4px solid #ffb6c1;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: #8a4b76;
+            font-weight: bold;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #ff6b8b;
+            box-shadow: 0 0 15px rgba(255, 107, 139, 0.5);
+        }
+
+        .feedback {
+            font-size: 1.4rem;
+            min-height: 40px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: #4CAF50;
+        }
+
+        .incorrect {
+            color: #f44336;
+        }
+
+        .encouragement {
+            color: #ff9800;
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 1.2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background-color: #ffccd5;
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 3px solid #ffb6c1;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #ff8fa3, #ff6b8b);
+            border-radius: 15px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Styling untuk layar hasil */
+        #result-screen {
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 3rem;
+            color: #ff69b4;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #ffd1dc;
+        }
+
+        .result-message {
+            font-size: 1.4rem;
+            color: #b76e79;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .trophy {
+            font-size: 6rem;
+            margin: 30px 0;
+            animation: rotate 3s infinite linear;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .honor-title {
+            font-size: 2rem;
+            color: #ff9800;
+            font-weight: bold;
+            margin-top: 20px;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-line {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 40px 0;
+        }
+
+        .customer-icon {
+            font-size: 2.5rem;
+            animation: celebrate 2s infinite ease-in-out;
+            animation-delay: calc(var(--i) * 0.1s);
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .result-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .result-btn {
+            padding: 15px 35px;
+            font-size: 1.3rem;
+        }
+
+        .restart-btn {
+            background: linear-gradient(to bottom, #66ccff, #3399ff);
+            box-shadow: 0 8px 0 #0066cc;
+        }
+
+        .home-btn {
+            background: linear-gradient(to bottom, #ffcc66, #ff9933);
+            box-shadow: 0 8px 0 #cc6600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Layar Selamat Datang -->
+        <div id="welcome-screen" class="game-screen active">
+            <h1>Math Bakery</h1>
+            <p class="subtitle">Latih Kecepatan & Ketepatan Menghitung Matematika Dasar!</p>
+            
+            <div class="bakery-bg"></div>
+            
+            <button id="start-btn" class="btn">MULAI KERJA SEBAGAI KASIR</button>
+            
+            <div class="level-info">
+                <div class="level-card">
+                    <div class="level-icon">🥐</div>
+                    <div class="level-name">BEGINNER</div>
+                    <div>5 Pelanggan</div>
+                    <div>10 Detik/Soal</div>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">🍰</div>
+                    <div class="level-name">INTERMEDIATE</div>
+                    <div>10 Pelanggan</div>
+                    <div>10 Detik/Soal</div>
+                </div>
+                <div class="level-card">
+                    <div class="level-icon">🏆</div>
+                    <div class="level-name">ADVANCED</div>
+                    <div>15 Pelanggan</div>
+                    <div>10 Detik/Soal</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Layar Permainan -->
+        <div id="game-screen" class="game-screen">
+            <div class="game-header">
+                <div class="level-info-game">Level: <span id="level">BEGINNER</span></div>
+                <div class="customer-count">Pelanggan: <span id="current-customer">1</span>/<span id="total-customers">5</span></div>
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-label">WAKTU TERSISA:</div>
+                <div class="timer" id="timer">10</div>
+            </div>
+            
+            <div class="customer-container">
+                <div class="customer" id="customer">👩</div>
+                <div class="customer-message" id="customer-message">Pelanggan #1 ingin membayar. Hitung total belanjaannya dalam 10 detik!</div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question" id="question">24 − 6 × 3 + 8</div>
+                <input type="number" class="answer-input" id="answer-input" placeholder="Masukkan jawaban" autofocus>
+                <button class="btn" id="submit-btn">BAYAR SEKARANG</button>
+                
+                <div class="feedback">
+                    <div id="feedback"></div>
+                    <div id="encouragement" class="encouragement"></div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+        
+        <!-- Layar Hasil -->
+        <div id="result-screen" class="game-screen">
+            <h2 class="result-title" id="result-title"></h2>
+            <div class="result-message" id="result-message"></div>
+            
+            <div id="trophy-container" style="display: none;">
+                <div class="trophy">🏆</div>
+                <div class="honor-title">ANAK KEBANGGAAN MR. ANDI</div>
+            </div>
+            
+            <div class="customer-line" id="customer-line"></div>
+            
+            <div class="result-buttons">
+                <button id="restart-btn" class="btn result-btn restart-btn">MAIN LAGI</button>
+                <button id="home-btn" class="btn result-btn home-btn">MENU UTAMA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data soal untuk setiap level
+        const gameData = {
+            beginner: {
+                questions: [
+                    "24 − 6 × 3 + 8",
+                    "45 : 5 + 7 × 2",
+                    "2^3 + 5^2",
+                    "(12 + 8) : 4 + 3^2",
+                    "4^2 − 3 × 5"
+                ],
+                answers: [14, 23, 33, 14, 1],
+                customerCount: 5,
+                nextLevel: "intermediate"
+            },
+            intermediate: {
+                questions: [
+                    "36 − 4 × 5 + 12",
+                    "72 : 6 + 8 × 3",
+                    "5^2 + 3 × 4",
+                    "(18 + 12) : 5 + 2^3",
+                    "7 × (10 − 4) + 3^2",
+                    "64 : (8 − 4) + 5^2",
+                    "3^3 + 6 × 4 − 10",
+                    "(25 − 5) × 2 + 4^2",
+                    "81 : 3^2 + 7",
+                    "6 × 5 − 2^3 + 9"
+                ],
+                answers: [28, 36, 37, 14, 51, 41, 41, 56, 16, 31],
+                customerCount: 10,
+                nextLevel: "advanced"
+            },
+            advanced: {
+                questions: [
+                    "12 − 5 × (−3)",
+                    "−8 + 6 × 4",
+                    "15 + (−4) × (−6)",
+                    "−20 − 3 × (−5)",
+                    "7 × (−6) + 18",
+                    "−14 + (−2) × 9",
+                    "25 − (−5) × 4",
+                    "−30 + 5 × (−6)",
+                    "(−12) × (−4) − 10",
+                    "6 + (−7) × 8",
+                    "−5 × 9 + 40",
+                    "18 − 4 × (−7)",
+                    "(−6) × 8 + 3",
+                    "−45 + (−5) × (−6)",
+                    "32 − (−4) × 7"
+                ],
+                answers: [27, 16, 39, -5, -24, -32, 45, -60, 38, -50, -5, 46, -45, -15, 60],
+                customerCount: 15,
+                nextLevel: "champion"
+            }
+        };
+
+        // Karakter pelanggan yang berbeda
+        const customerAvatars = ["👩", "👨", "🧑", "👧", "👦", "🧔", "👵", "👴", "👩‍🦰", "👨‍🦱", 
+                                "👩‍🦳", "👨‍🦳", "👩‍🎓", "👨‍🎓", "👩‍🍳", "👨‍🍳", "👩‍💼", "👨‍💼", "👩‍🔧", "👨‍🔧"];
+
+        // Variabel game state
+        let currentLevel = "beginner";
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 10;
+        let isGameActive = false;
+
+        // Elemen DOM
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const answerInput = document.getElementById('answer-input');
+        const restartBtn = document.getElementById('restart-btn');
+        const homeBtn = document.getElementById('home-btn');
+        
+        const levelElement = document.getElementById('level');
+        const currentCustomerElement = document.getElementById('current-customer');
+        const totalCustomersElement = document.getElementById('total-customers');
+        const questionElement = document.getElementById('question');
+        const feedbackElement = document.getElementById('feedback');
+        const encouragementElement = document.getElementById('encouragement');
+        const customerElement = document.getElementById('customer');
+        const customerMessageElement = document.getElementById('customer-message');
+        const progressElement = document.getElementById('progress');
+        const timerElement = document.getElementById('timer');
+        
+        const resultTitleElement = document.getElementById('result-title');
+        const resultMessageElement = document.getElementById('result-message');
+        const trophyContainer = document.getElementById('trophy-container');
+        const customerLineElement = document.getElementById('customer-line');
+
+        // Fungsi untuk memulai game
+        function startGame() {
+            currentLevel = "beginner";
+            currentQuestionIndex = 0;
+            score = 0;
+            timeLeft = 10;
+            isGameActive = true;
+            
+            updateGameScreen();
+            startTimer();
+            showScreen(gameScreen);
+        }
+
+        // Fungsi untuk memulai timer
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 10;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 3) {
+                    timerElement.classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        // Fungsi untuk memperbarui tampilan timer
+        function updateTimerDisplay() {
+            timerElement.textContent = timeLeft;
+        }
+
+        // Fungsi ketika waktu habis
+        function timeUp() {
+            if (!isGameActive) return;
+            
+            isGameActive = false;
+            const levelData = gameData[currentLevel];
+            const correctAnswer = levelData.answers[currentQuestionIndex];
+            
+            feedbackElement.textContent = `Waktu habis! ⏰ Jawaban yang benar adalah ${correctAnswer}`;
+            feedbackElement.className = "feedback incorrect";
+            encouragementElement.textContent = "Salah bukan berarti kalah, tapi awal dari kemenangan";
+            
+            setTimeout(() => {
+                showResult(false);
+            }, 2000);
+        }
+
+        // Fungsi untuk mengupdate layar permainan
+        function updateGameScreen() {
+            const levelData = gameData[currentLevel];
+            
+            // Update informasi level
+            levelElement.textContent = currentLevel.toUpperCase();
+            currentCustomerElement.textContent = currentQuestionIndex + 1;
+            totalCustomersElement.textContent = levelData.customerCount;
+            
+            // Update progress bar
+            const progressPercent = ((currentQuestionIndex) / levelData.customerCount) * 100;
+            progressElement.style.width = `${progressPercent}%`;
+            
+            // Update pertanyaan
+            questionElement.textContent = levelData.questions[currentQuestionIndex];
+            
+            // Update karakter pelanggan
+            const customerIndex = currentQuestionIndex % customerAvatars.length;
+            customerElement.textContent = customerAvatars[customerIndex];
+            
+            // Update pesan pelanggan
+            const customerMessages = [
+                "Cepat ya, saya buru-buru!",
+                "Tolong hitung dengan tepat!",
+                "Saya sudah menunggu lama nih!",
+                "Hitung totalnya dengan benar ya!",
+                "Saya punya waktu 10 detik saja!",
+                "Cepat, antrian sudah panjang!",
+                "Hitung dengan teliti ya!",
+                "Saya percayakan padamu!",
+                "Jangan sampai salah hitung!",
+                "Ayo, kamu pasti bisa!"
+            ];
+            
+            const randomMessage = customerMessages[Math.floor(Math.random() * customerMessages.length)];
+            customerMessageElement.textContent = `Pelanggan #${currentQuestionIndex + 1}: ${randomMessage}`;
+            
+            // Reset input dan feedback
+            answerInput.value = "";
+            feedbackElement.textContent = "";
+            feedbackElement.className = "feedback";
+            encouragementElement.textContent = "";
+            timerElement.classList.remove('warning');
+            
+            // Fokus ke input
+            answerInput.focus();
+        }
+
+        // Fungsi untuk mengecek jawaban
+        function checkAnswer() {
+            if (!isGameActive) return;
+            
+            clearInterval(timer);
+            isGameActive = false;
+            
+            const userAnswer = parseInt(answerInput.value);
+            const levelData = gameData[currentLevel];
+            const correctAnswer = levelData.answers[currentQuestionIndex];
+            
+            // Validasi input
+            if (isNaN(userAnswer)) {
+                feedbackElement.textContent = "Masukkan jawaban berupa angka!";
+                feedbackElement.className = "feedback incorrect";
+                isGameActive = true;
+                startTimer();
+                return;
+            }
+            
+            if (userAnswer === correctAnswer) {
+                // Jawaban benar
+                feedbackElement.textContent = `Benar! 🎉 Total belanjaannya adalah ${correctAnswer}`;
+                feedbackElement.className = "feedback correct";
+                encouragementElement.textContent = "";
+                score++;
+                
+                // Tunggu sebentar lalu lanjut
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    
+                    if (currentQuestionIndex < levelData.customerCount) {
+                        // Masih ada pertanyaan di level ini
+                        isGameActive = true;
+                        startTimer();
+                        updateGameScreen();
+                    } else {
+                        // Selesai level ini
+                        completeLevel();
+                    }
+                }, 1500);
+            } else {
+                // Jawaban salah
+                feedbackElement.textContent = `Salah! ❌ Jawaban yang benar adalah ${correctAnswer}`;
+                feedbackElement.className = "feedback incorrect";
+                encouragementElement.textContent = "Salah bukan berarti kalah, tapi awal dari kemenangan";
+                
+                // Tunggu sebentar lalu tampilkan layar hasil (gagal)
+                setTimeout(() => {
+                    showResult(false);
+                }, 2000);
+            }
+        }
+
+        // Fungsi ketika level selesai
+        function completeLevel() {
+            if (currentLevel === "advanced") {
+                // Menyelesaikan level advanced = menjadi juara
+                showResult(true, true);
+            } else {
+                // Lanjut ke level berikutnya
+                const nextLevel = gameData[currentLevel].nextLevel;
+                currentLevel = nextLevel;
+                currentQuestionIndex = 0;
+                
+                // Update layar untuk level baru
+                isGameActive = true;
+                startTimer();
+                updateGameScreen();
+                
+                // Tampilkan pesan transisi
+                feedbackElement.textContent = `Selamat! Kamu naik ke level ${nextLevel.toUpperCase()}!`;
+                feedbackElement.className = "feedback correct";
+                encouragementElement.textContent = "Siap menghadapi pelanggan berikutnya?";
+                
+                // Reset input
+                answerInput.value = "";
+            }
+        }
+
+        // Fungsi untuk menampilkan layar hasil
+        function showResult(isSuccess, isChampion = false) {
+            clearInterval(timer);
+            isGameActive = false;
+            
+            if (isChampion) {
+                // Menjadi juara
+                resultTitleElement.textContent = "SELAMAT! KAMU JUARA! 🏆";
+                resultMessageElement.textContent = "Kamu berhasil menyelesaikan semua level dengan sempurna! Kamu adalah kasir terbaik di Math Bakery!";
+                trophyContainer.style.display = "block";
+                
+                // Tampilkan garis pelanggan
+                customerLineElement.innerHTML = "";
+                for (let i = 0; i < 15; i++) {
+                    const customerIcon = document.createElement('div');
+                    customerIcon.className = 'customer-icon';
+                    customerIcon.textContent = customerAvatars[i % customerAvatars.length];
+                    customerIcon.style.setProperty('--i', i);
+                    customerLineElement.appendChild(customerIcon);
+                }
+            } else if (isSuccess) {
+                // Berhasil menyelesaikan level
+                const levelName = currentLevel.toUpperCase();
+                resultTitleElement.textContent = `LEVEL ${levelName} SELESAI!`;
+                resultMessageElement.textContent = `Kamu berhasil melayani ${gameData[currentLevel].customerCount} pelanggan dengan benar! Tingkatkan terus kemampuan matematikamu!`;
+                trophyContainer.style.display = "none";
+                
+                // Tampilkan garis pelanggan
+                customerLineElement.innerHTML = "";
+                for (let i = 0; i < gameData[currentLevel].customerCount; i++) {
+                    const customerIcon = document.createElement('div');
+                    customerIcon.className = 'customer-icon';
+                    customerIcon.textContent = customerAvatars[i % customerAvatars.length];
+                    customerIcon.style.setProperty('--i', i);
+                    customerLineElement.appendChild(customerIcon);
+                }
+            } else {
+                // Gagal
+                resultTitleElement.textContent = "KAMU DI PECAT! 😢";
+                resultMessageElement.textContent = `Kamu gagal menjawab soal untuk pelanggan ke-${currentQuestionIndex + 1}. Waktu 10 detik per soal tidak cukup? Coba lagi ya!`;
+                trophyContainer.style.display = "none";
+                
+                // Tampilkan garis pelanggan yang kesal
+                customerLineElement.innerHTML = "";
+                for (let i = 0; i < 5; i++) {
+                    const customerIcon = document.createElement('div');
+                    customerIcon.className = 'customer-icon';
+                    customerIcon.textContent = '😠';
+                    customerIcon.style.setProperty('--i', i);
+                    customerLineElement.appendChild(customerIcon);
+                }
+            }
+            
+            showScreen(resultScreen);
+        }
+
+        // Fungsi untuk mengganti layar yang ditampilkan
+        function showScreen(screen) {
+            // Sembunyikan semua layar
+            welcomeScreen.classList.remove('active');
+            gameScreen.classList.remove('active');
+            resultScreen.classList.remove('active');
+            
+            // Tampilkan layar yang dipilih
+            screen.classList.add('active');
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startGame);
+        
+        submitBtn.addEventListener('click', checkAnswer);
+        
+        answerInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        restartBtn.addEventListener('click', startGame);
+        
+        homeBtn.addEventListener('click', function() {
+            clearInterval(timer);
+            showScreen(welcomeScreen);
+        });
+
+        // Inisialisasi game
+        showScreen(welcomeScreen);
+    </script>
+</body>
+</html>
